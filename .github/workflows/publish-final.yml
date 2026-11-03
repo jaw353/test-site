@@ -1,0 +1,38 @@
+name: Publish final Water Quest game
+
+on:
+  push:
+    branches: ["final-game"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "water-quest-pages"
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out final game branch
+        uses: actions/checkout@v4
+        with:
+          ref: final-game
+      - name: Enable and configure GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Package website
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: Publish website on GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
