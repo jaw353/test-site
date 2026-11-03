@@ -1,0 +1,1 @@
+This branch contains the final Water Quest game. GitHub Pages is published by the workflow on the repository's default branch, which checks out this branch and deploys its root files.
