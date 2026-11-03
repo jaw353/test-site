@@ -2,7 +2,7 @@ name: Publish final Water Quest game
 
 on:
   push:
-    branches: ["final-game"]
+    branches: ["main", "final-game"]
   workflow_dispatch:
 
 permissions:
