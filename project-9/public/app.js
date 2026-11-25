@@ -1,7 +1,6 @@
-import {preview} from './catalog-preview.js';
 const $ = id => document.getElementById(id);
 const catalog = (await fetch('./products.json').then(r => r.json())).products.map(p=>({...p,id:String(p.id)}));
-const endpoint = location.hostname === 'jaw353.github.io' ? 'https://jacob-windsor-routine-atelier.windsorj-aaron.chatgpt.site/api/chat' : '/api/chat';
+const endpoint = 'https://square-dust-458e.jaw353.workers.dev/';
 const words = {
  atelier:['Routine Atelier','استوديو العناية'],title:['Build your routine.','صمّم روتينك.'],intro:['Choose your beauty products, then shape a routine around the way you use them.','اختر منتجات العناية ببشرتك وصمّم روتينًا يناسب احتياجاتك.'],
  shelf:['The product shelf','رف المنتجات'],selection:['Your selection','منتجاتك المختارة'],goal:['Routine preferences (optional)','تفضيلات الروتين (اختياري)'],hint:['e.g. Dry skin, two steps before bed','مثال: بشرة جافة، خطوتان قبل النوم'],generate:['Generate Routine','إنشاء الروتين'],chat:['Routine conversation','محادثة الروتين'],ask:['Ask about your routine','اسأل عن روتينك'],web:['Search current brand guidance and include sources','ابحث عن أحدث إرشادات العلامة التجارية وأدرج المصادر'],footer:['Independent student project','مشروع طلابي مستقل'],
@@ -55,9 +54,9 @@ async function request(isRoutine){
  if(!isRoutine&&!question)return;
  const content=isRoutine?t('build')+' '+picks.map(p=>p.name).join(', ')+(goal?' — '+goal:''):question;
  const useWeb=$('web').checked;const message={role:'user',content};history.push(message);busy=true;renderHistory();renderPicked();$('status').textContent=t('wait');$('chat').scrollIntoView({block:'start'});
- try{const res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:isRoutine?'routine':'chat',products:picks.map(({id,name,brand,category,description})=>({id,name,brand,category,description})),goal,lang:ar?'ar':'en',web:$('web').checked,messages:history.map(({role,content})=>({role,content}))})});
- let data=await res.json();if(data.code==='missing_key')data=preview({catalog,picks,history,goal,question,routine:isRoutine,ar,web:useWeb});else if(!res.ok)throw Error(data.code||'failed');history.push({role:'assistant',content:data.text,citations:data.citations,sources:data.sources});if(!isRoutine&&$('question').value.trim()===question)$('question').value='';$('status').textContent='';
- }catch(e){if(e instanceof TypeError || e instanceof SyntaxError){const fallback=preview({catalog,picks,history,goal,question,routine:isRoutine,ar,web:useWeb});history.push({role:'assistant',content:fallback.text});$('status').textContent=''}else{history.pop();$('status').textContent=t('failed')}}
+ try{const res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode:isRoutine?'routine':'chat',products:picks.map(({id,name,brand,category,description})=>({id,name,brand,category,description})),goal,lang:ar?'ar':'en',web:useWeb,messages:[...history.slice(-10,-1).map(({role,content})=>({role,content:content.slice(0,2000)})),{role:'user',content:JSON.stringify({task:isRoutine?'Create an ordered personalized routine using only selected products':'Answer the follow-up using prior conversation and current selected products',language:ar?'Arabic':'English',preferences:goal,selected:picks.map(({name,brand,category,description})=>({name,brand,category,description})),question:content}).slice(0,18000)}]})});
+ let data=await res.json();if(!res.ok)throw Error(data.error||data.code||'failed');const answer=data.reply||data.text;if(typeof answer!=='string'||!answer.trim())throw Error('Empty AI response');history.push({role:'assistant',content:answer,citations:data.citations,sources:data.sources});if(!isRoutine&&$('question').value.trim()===question)$('question').value='';$('status').textContent='';
+ }catch(e){history.pop();$('status').textContent=t('failed')+' '+e.message}
  finally{busy=false;renderHistory();renderPicked()}
 }
 $('clear').onclick=()=>{chosen.clear();sync()};$('search').oninput=renderGrid;$('category').onchange=e=>{category=e.target.value;renderGrid()};$('lang').onclick=()=>{ar=!ar;persist('atelier.ar',ar);render()};$('generate').onclick=()=>request(true);$('ask').onsubmit=e=>{e.preventDefault();request(false)};
