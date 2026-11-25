@@ -1,4 +1,4 @@
-const ENDPOINT = ""; // Paste deployed HTTPS Cloudflare Worker URL here.
+const ENDPOINT = "https://square-dust-458e.jaw353.workers.dev/"; // Paste deployed HTTPS Cloudflare Worker URL here.
 const chat=document.querySelector("#chat"), form=document.querySelector("#form"), input=document.querySelector("#question"), send=document.querySelector("#send"), status=document.querySelector("#status"), reset=document.querySelector("#reset");
 let history=[],busy=false;
 function message(role,content){const el=document.createElement("div");el.className="message "+role;const label=document.createElement("span");label.className="label";label.textContent=role==="user"?"You":"L’Oréal Beauty Advisor";el.append(label,document.createTextNode(content));chat.append(el);chat.scrollTop=chat.scrollHeight}
